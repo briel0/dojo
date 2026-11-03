@@ -1,0 +1,16 @@
+# Segredos e configuração local
+.env
+*.token
+*.pem
+*.key
+
+# Dados gerados pelo coletor: ficam só na VPS
+data/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Referências visuais: locais, podem ter dados pessoais e imagens de terceiros
+refs/

@@ -4,11 +4,16 @@ Instruções para agentes de IA (Claude Code, Codex, Antigravity etc.) trabalhan
 
 ## O que é
 
-**Painel**: página com informações do ecossistema pessoal (ALICE, Treinos, Planner e o que vier). Começa por
+**Dojo**: painel pessoal, uma página com informações do ecossistema pessoal (ALICE, Treinos, Planner e o que vier). Começa por
 um **quadrinho de frequência**, como o do GitHub, juntando várias fontes num só: cada dia ganha uma cor
 conforme a combinação de atividades feitas.
 
-> Status: **estrutura inicial**. Ainda sem coletor nem página.
+> Status: **coletor pronto** (`collector/collect.py`), testado no PC com as três fontes. Falta a página e a
+> instalação na VPS.
+>
+> Rodar no PC: `.env` na raiz (ver `.env.example`) e `GITHUB_TOKEN="$(gh auth token)" python collector/collect.py`.
+> Para os treinos, abrir antes o túnel da API (`ssh -N -L 8781:127.0.0.1:5265 alice-vm`) e usar
+> `TREINOS_API_URL=http://localhost:8781`.
 
 ## Repositório público, dados fora dele (regra principal)
 
@@ -29,18 +34,29 @@ de seguir.
 | 1 | Onde fica | VPS, servido pelo nginx só em `127.0.0.1:8082`, acesso por túnel SSH (como o Planner) | GitHub Pages (tudo público), domínio com login (exposto), Cloudflare Tunnel; Tailscale está no backlog da ALICE |
 | 2 | Como os dados chegam à página | um coletor roda por timer (de hora em hora) e grava um JSON; a página só lê o arquivo | API própria (processo sempre ligado; GitHub e Codeforces precisariam de cache por causa do limite de chamadas), tabelas no Postgres (ainda precisaria de algo para servir) |
 | 3 | Atividades do quadrinho | duas: **codar** (contribuições do GitHub, inclusive privadas, ou submissões do Codeforces) e **treinar** (qualquer treino no Treinos, inclusive cardio) | uma atividade por fonte (até 8 combinações); peso, tarefas e gastos ficam para outras partes do painel |
-| 4 | Cores | uma por combinação: nada (cinza), só codou (verde), só treinou (azul), os dois (dourado) | célula dividida em pedaços, um por atividade |
+| 4 | Cores | cada atividade tem a sua cor: código azul `#3D7BFF`, treino âmbar `#FFB000`; os dois é a célula dividida na diagonal entre as duas; nada `#23232D` | uma cor por combinação (exigiria decorar o que cada cor quer dizer) |
 | 5 | Intensidade | a cor não mostra quantidade; passar o mouse mostra o detalhe do dia | tons por quantidade, como no GitHub |
 | 6 | Dia | calendário de Brasília (`America/Sao_Paulo`) para todas as fontes | UTC |
 | 7 | Formato do JSON | contagens por fonte e por dia (`{"github": 3, "codeforces": 2, "workout": 1}`); a cor é regra da página | só a combinação do dia (perderia o detalhe e prenderia a regra das cores) |
 | 8 | Coletor | Python só com a biblioteca padrão (`urllib`, `json`), roda com o `python3` do sistema na VPS (3.12) | `httpx` e um ambiente do `uv` (dependência e venv para poucas chamadas HTTP) |
+| 9 | O que conta como codar no Codeforces | qualquer submissão, com qualquer veredito | só as aceitas (tentar e errar também é codar) |
+| 10 | Fonte que falha | mantém as contagens da execução anterior e registra o erro em `sources` no JSON; as outras seguem | falhar tudo (uma API fora do ar apagaria o quadrinho) |
+| 11 | Fuso de Brasília no código | deslocamento fixo de -03:00, sem a base de fusos (o Python no Windows não a traz). Não há horário de verão desde 2019 | `zoneinfo` + pacote `tzdata` (dependência só para isso) |
+| 12 | Período do quadrinho | os últimos 12 meses (53 semanas), terminando hoje | a temporada (janeiro a dezembro), como no mockup: em janeiro o quadrinho estaria quase vazio |
+| 13 | Visual | segue o mockup "Dojo · placar" (só local, em `refs/`): tema escuro, Big Shoulders Display e Martian Mono do Google Fonts, cantos retos e cortes diagonais. Reproduzido em HTML, CSS e JavaScript puro, sem o React do mockup | — |
+
+Adiado: as estatísticas do topo do mockup (sequência atual, recorde, dias completos). Falta decidir o que conta
+para cada uma.
+
+Limite conhecido: o GitHub já entrega o total por dia, no calendário dele, e não dá para reagrupar no fuso de
+Brasília. Uma contribuição perto da meia-noite pode cair num dia diferente das outras fontes.
 
 Ao tomar uma decisão nova, acrescente-a nesta tabela.
 
 ## Estrutura
 
 ```
-painel/
+dojo/
 ├── collector/   # coletor: busca as fontes e grava o JSON
 ├── web/         # página estática (HTML, CSS e JavaScript, sem framework)
 ├── deploy/      # timer do systemd e site do nginx (a criar)

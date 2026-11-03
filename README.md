@@ -1,4 +1,4 @@
-# Painel
+# Dojo
 
 Painel pessoal que junta informações de vários serviços. Começa por um quadrinho de frequência no estilo do
 GitHub, em que a cor de cada dia mostra a combinação de atividades feitas (codar e treinar).

@@ -9,6 +9,7 @@
   --code: #3D7BFF;
   --workout: #FFB000;
   --workout-hover: #FFC94D;
+  --teaching: #1FC79A;
   --display: 'Big Shoulders Display', sans-serif;
   --mono: 'Martian Mono', ui-monospace, monospace;
   --cell: 14px;
@@ -112,11 +113,7 @@ a:hover { color: var(--workout-hover); }
 .legend li { display: inline-flex; align-items: center; gap: 8px; }
 .swatch { width: 12px; height: 12px; }
 
-/* As cores de cada combinação: código, treino, os dois (diagonal) e nada */
-[data-kind="0"] { background: var(--empty); }
-[data-kind="1"] { background: var(--code); }
-[data-kind="2"] { background: var(--workout); }
-[data-kind="3"] { background: linear-gradient(135deg, var(--code) 50%, var(--workout) 50%); }
+/* Dias depois de hoje na última coluna; as outras cores vêm do app.js (fillOf) */
 [data-kind="future"] { background: transparent; box-shadow: inset 0 0 0 1px var(--border); }
 
 .grid-scroll { overflow-x: auto; padding: 24px 20px 20px; }

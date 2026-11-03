@@ -3,7 +3,13 @@
 
 const MONTHS = ['JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ'];
 const WEEKDAYS = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'];
-const SOURCE_NAMES = { github: 'GitHub', codeforces: 'Codeforces', workout: 'Treinos' };
+const SOURCE_NAMES = { github: 'GitHub', codeforces: 'Codeforces', workout: 'Treinos', teaching: 'Aulas' };
+// Atividades do quadrinho, na ordem em que dividem a célula (decisões 3 e 4)
+const ACTIVITIES = [
+  { name: 'código', color: 'var(--code)', done: (c) => (c.github || 0) + (c.codeforces || 0) > 0 },
+  { name: 'treino', color: 'var(--workout)', done: (c) => (c.workout || 0) > 0 },
+  { name: 'aula', color: 'var(--teaching)', done: (c) => (c.teaching || 0) > 0 },
+];
 const WEEKS = 53; // últimos 12 meses em colunas completas (decisão 12)
 const DAY_MS = 86400000;
 
@@ -21,14 +27,21 @@ function describe(counts) {
   if (counts.github) parts.push(plural(counts.github, 'contribuição', 'contribuições'));
   if (counts.codeforces) parts.push(plural(counts.codeforces, 'submissão', 'submissões'));
   if (counts.workout) parts.push(plural(counts.workout, 'treino', 'treinos'));
+  if (counts.teaching) parts.push(plural(counts.teaching, 'aula', 'aulas'));
   return parts.length ? parts.join(' · ') : 'descanso';
 }
 
-/** 0 nada, 1 código, 2 treino, 3 os dois (decisão 4). */
-function kindOf(counts) {
-  const code = (counts.github || 0) + (counts.codeforces || 0) > 0;
-  const workout = (counts.workout || 0) > 0;
-  return (code ? 1 : 0) + (workout ? 2 : 0);
+/**
+ * A cor da célula: vazia, uma atividade inteira, ou faixas diagonais iguais, uma por atividade feita
+ * (decisão 4). Ex.: código e treino = metade azul, metade âmbar.
+ */
+function fillOf(counts) {
+  const colors = ACTIVITIES.filter((activity) => activity.done(counts)).map((activity) => activity.color);
+  if (colors.length === 0) return 'var(--empty)';
+  if (colors.length === 1) return colors[0];
+  const step = 100 / colors.length;
+  const stops = colors.map((color, i) => `${color} ${(i * step).toFixed(2)}% ${((i + 1) * step).toFixed(2)}%`);
+  return `linear-gradient(135deg, ${stops.join(', ')})`;
 }
 
 function render(data) {
@@ -72,7 +85,8 @@ function render(data) {
       const cell = document.createElement('button');
       cell.type = 'button';
       cell.className = 'cell';
-      cell.dataset.kind = future ? 'future' : String(kindOf(counts));
+      if (future) cell.dataset.kind = 'future';
+      else cell.style.background = fillOf(counts);
       cell.setAttribute('aria-label', `${label} — ${future ? 'ainda não jogado' : describe(counts)}`);
       cell.title = cell.getAttribute('aria-label');
       cell.addEventListener('mouseenter', () => select(cell, day));

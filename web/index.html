@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Dojo</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800;900&family=Martian+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -20,10 +21,11 @@
     <div class="card-head">
       <h2 id="freq-title" class="card-title">FREQUÊNCIA</h2>
       <ul class="legend" aria-label="Legenda">
-        <li><span class="swatch" data-kind="0"></span>nada</li>
-        <li><span class="swatch" data-kind="1"></span>código</li>
-        <li><span class="swatch" data-kind="2"></span>treino</li>
-        <li><span class="swatch" data-kind="3"></span>os dois</li>
+        <li><span class="swatch" style="background: var(--empty)"></span>nada</li>
+        <li><span class="swatch" style="background: var(--code)"></span>código</li>
+        <li><span class="swatch" style="background: var(--workout)"></span>treino</li>
+        <li><span class="swatch" style="background: var(--teaching)"></span>aula</li>
+        <li><span class="swatch" style="background: linear-gradient(135deg, var(--code) 50%, var(--workout) 50%)"></span>mais de uma</li>
       </ul>
     </div>
 

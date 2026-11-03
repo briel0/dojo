@@ -21,7 +21,7 @@ BRT = timezone(timedelta(hours=-3), "America/Sao_Paulo")
 DAYS = 371  # 53 semanas: o quadrinho mostra o último ano em colunas completas
 TIMEOUT_SECONDS = 30
 ROOT = Path(__file__).resolve().parent.parent
-SOURCES = ("github", "codeforces", "workout")
+SOURCES = ("github", "codeforces", "workout", "teaching")
 
 
 def load_env_file(path: Path) -> None:
@@ -111,6 +111,17 @@ def workout_counts(api_url: str, start: date, end: date) -> dict[str, int]:
     return counts
 
 
+def teaching_counts(path: str, start: date, end: date) -> dict[str, int]:
+    """Aulas dadas por dia, do JSON gerado por import_aulas.py a partir dos demonstrativos."""
+    file = Path(path) if Path(path).is_absolute() else ROOT / path
+    classes = json.loads(file.read_text(encoding="utf-8"))["classes"]
+    counts: dict[str, int] = {}
+    for item in classes:
+        if start.isoformat() <= item["day"] <= end.isoformat():
+            counts[item["day"]] = counts.get(item["day"], 0) + 1
+    return counts
+
+
 def previous_counts(output: Path) -> dict[str, dict[str, int]]:
     """As contagens da última execução, por fonte, para não apagar uma fonte que falhou agora."""
     try:
@@ -150,6 +161,7 @@ def main() -> int:
         ),
         "codeforces": (("CODEFORCES_HANDLE",), lambda: codeforces_counts(os.environ["CODEFORCES_HANDLE"], start, end)),
         "workout": (("TREINOS_API_URL",), lambda: workout_counts(os.environ["TREINOS_API_URL"], start, end)),
+        "teaching": (("AULAS_PATH",), lambda: teaching_counts(os.environ["AULAS_PATH"], start, end)),
     }
     counts: dict[str, dict[str, int]] = {}
     status: dict[str, dict] = {}

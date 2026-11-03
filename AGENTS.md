@@ -36,8 +36,8 @@ de seguir.
 |---|---|---|---|
 | 1 | Onde fica | VPS, servido pelo nginx só em `127.0.0.1:8082`, acesso por túnel SSH (como o Planner) | GitHub Pages (tudo público), domínio com login (exposto), Cloudflare Tunnel; Tailscale está no backlog da ALICE |
 | 2 | Como os dados chegam à página | um coletor roda por timer (de hora em hora) e grava um JSON; a página só lê o arquivo | API própria (processo sempre ligado; GitHub e Codeforces precisariam de cache por causa do limite de chamadas), tabelas no Postgres (ainda precisaria de algo para servir) |
-| 3 | Atividades do quadrinho | duas: **codar** (contribuições do GitHub, inclusive privadas, ou submissões do Codeforces) e **treinar** (qualquer treino no Treinos, inclusive cardio) | uma atividade por fonte (até 8 combinações); peso, tarefas e gastos ficam para outras partes do painel |
-| 4 | Cores | cada atividade tem a sua cor: código azul `#3D7BFF`, treino âmbar `#FFB000`; os dois é a célula dividida na diagonal entre as duas; nada `#23232D` | uma cor por combinação (exigiria decorar o que cada cor quer dizer) |
+| 3 | Atividades do quadrinho | três: **codar** (contribuições do GitHub, inclusive privadas, ou submissões do Codeforces), **treinar** (qualquer treino no Treinos, inclusive cardio) e **dar aula** (aulas ao vivo dos demonstrativos de repasse) | uma atividade por fonte; peso, tarefas e gastos ficam para outras partes do painel |
+| 4 | Cores | cada atividade tem a sua cor: código azul `#3D7BFF`, treino âmbar `#FFB000`, aula verde `#1FC79A` (azul, laranja e verde azulado, como na paleta Okabe-Ito, que daltônicos distinguem); um dia com mais de uma é a célula dividida em faixas diagonais iguais, na ordem código, treino, aula; nada `#23232D` | uma cor por combinação (com três atividades seriam 7 cores para decorar); um quadrinho por atividade |
 | 5 | Intensidade | a cor não mostra quantidade; passar o mouse mostra o detalhe do dia | tons por quantidade, como no GitHub |
 | 6 | Dia | calendário de Brasília (`America/Sao_Paulo`) para todas as fontes | UTC |
 | 7 | Formato do JSON | contagens por fonte e por dia (`{"github": 3, "codeforces": 2, "workout": 1}`); a cor é regra da página | só a combinação do dia (perderia o detalhe e prenderia a regra das cores) |
@@ -47,6 +47,8 @@ de seguir.
 | 11 | Fuso de Brasília no código | deslocamento fixo de -03:00, sem a base de fusos (o Python no Windows não a traz). Não há horário de verão desde 2019 | `zoneinfo` + pacote `tzdata` (dependência só para isso) |
 | 12 | Período do quadrinho | os últimos 12 meses (53 semanas), terminando hoje | a temporada (janeiro a dezembro), como no mockup: em janeiro o quadrinho estaria quase vazio |
 | 13 | Visual | segue o mockup "Dojo · placar" (só local, em `refs/`): tema escuro, Big Shoulders Display e Martian Mono do Google Fonts, cantos retos e cortes diagonais. Reproduzido em HTML, CSS e JavaScript puro, sem o React do mockup | — |
+| 14 | Fonte das aulas | demonstrativos mensais de repasse em PDF, lidos no PC por `collector/import_aulas.py` (`pdftotext`). Só entram aulas ao vivo (vídeos gravados ficam de fora); guarda só dia e horário, nunca valores nem turmas. O JSON vai para `/var/lib/dojo/aulas.json` na VPS | digitar os dias à mão; guardar o demonstrativo inteiro |
+| 15 | Favicon | SVG com quatro células do quadrinho (código, treino, aula e um dia com as três) | letra ou logotipo (a fonte do título não carrega num SVG de favicon) |
 
 Adiado: as estatísticas do topo do mockup (sequência atual, recorde, dias completos). Falta decidir o que conta
 para cada uma.

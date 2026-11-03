@@ -4,12 +4,13 @@
 const MONTHS = ['JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ'];
 const WEEKDAYS = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'];
 const SOURCE_NAMES = { github: 'GitHub', codeforces: 'Codeforces', workout: 'Treinos', teaching: 'Aulas' };
-// Atividades do quadrinho, na ordem em que dividem a célula (decisões 3 e 4)
+// Atividades que pintam a célula, na ordem em que a dividem (decisões 3 e 4). A aula não pinta:
+// vira um quadradinho discreto no meio da célula (decisão 16).
 const ACTIVITIES = [
   { name: 'código', color: 'var(--code)', done: (c) => (c.github || 0) + (c.codeforces || 0) > 0 },
   { name: 'treino', color: 'var(--workout)', done: (c) => (c.workout || 0) > 0 },
-  { name: 'aula', color: 'var(--teaching)', done: (c) => (c.teaching || 0) > 0 },
 ];
+const taught = (c) => (c.teaching || 0) > 0;
 const WEEKS = 53; // últimos 12 meses em colunas completas (decisão 12)
 const DAY_MS = 86400000;
 
@@ -33,7 +34,7 @@ function describe(counts) {
 
 /**
  * A cor da célula: vazia, uma atividade inteira, ou faixas diagonais iguais, uma por atividade feita
- * (decisão 4). Ex.: código e treino = metade azul, metade âmbar.
+ * (decisão 4). Ex.: código e treino = metade vermelha, metade âmbar.
  */
 function fillOf(counts) {
   const colors = ACTIVITIES.filter((activity) => activity.done(counts)).map((activity) => activity.color);
@@ -86,7 +87,10 @@ function render(data) {
       cell.type = 'button';
       cell.className = 'cell';
       if (future) cell.dataset.kind = 'future';
-      else cell.style.background = fillOf(counts);
+      else {
+        cell.style.background = fillOf(counts);
+        if (taught(counts)) cell.classList.add('taught');
+      }
       cell.setAttribute('aria-label', `${label} — ${future ? 'ainda não jogado' : describe(counts)}`);
       cell.title = cell.getAttribute('aria-label');
       cell.addEventListener('mouseenter', () => select(cell, day));

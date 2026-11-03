@@ -152,7 +152,20 @@ a:hover { color: var(--workout-hover); }
   display: block;
   cursor: pointer;
   background: var(--empty); /* nunca o cinza claro padrão de botão, mesmo se o JavaScript falhar */
+  position: relative;
 }
+
+/* Dia com aula: um quadradinho discreto no meio da célula, sem competir com código e treino (decisão 16) */
+.cell.taught::after, .swatch.taught::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 4px;
+  height: 4px;
+  background: var(--teaching);
+}
+.swatch { position: relative; }
 
 .cell[data-kind="future"] { cursor: default; }
 .cell.today { outline: 2px solid var(--workout); outline-offset: 1px; }

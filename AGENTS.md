@@ -48,7 +48,8 @@ de seguir.
 | 12 | Período do quadrinho | os últimos 12 meses (53 semanas), terminando hoje | a temporada (janeiro a dezembro), como no mockup: em janeiro o quadrinho estaria quase vazio |
 | 13 | Visual | segue o mockup "Dojo · placar" (só local, em `refs/`): tema escuro, Big Shoulders Display e Martian Mono do Google Fonts, cantos retos e cortes diagonais. Reproduzido em HTML, CSS e JavaScript puro, sem o React do mockup | — |
 | 14 | Fonte das aulas | demonstrativos mensais de repasse em PDF, lidos no PC por `collector/import_aulas.py` (`pdftotext`). Só entram aulas ao vivo (vídeos gravados ficam de fora); guarda só dia e horário, nunca valores nem turmas. O JSON vai para `/var/lib/dojo/aulas.json` na VPS | digitar os dias à mão; guardar o demonstrativo inteiro |
-| 15 | Favicon | SVG com quatro células do quadrinho (código, treino, aula e um dia com as três) | letra ou logotipo (a fonte do título não carrega num SVG de favicon) |
+| 15 | Favicon | SVG com quatro células do quadrinho (código, treino, um dia só com aula e um dia com as três) | letra ou logotipo (a fonte do título não carrega num SVG de favicon) |
+| 16 | Peso da aula no quadrinho | aula é trabalho com horário marcado e enchia o quadrinho; não pinta a célula, vira um quadradinho azul de 4px no meio dela. Só código e treino dividem a célula em faixas | seletor na legenda para ligar e desligar atividades; tirar as aulas do quadrinho e mostrar só um número |
 
 Adiado: as estatísticas do topo do mockup (sequência atual, recorde, dias completos). Falta decidir o que conta
 para cada uma.

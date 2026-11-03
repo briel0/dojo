@@ -1,0 +1,19 @@
+[Unit]
+Description=Dojo - coleta as atividades do quadrinho
+After=network-online.target treinos-api.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=dojo
+Group=dojo
+# Token e usuários: lido pelo systemd como root (o arquivo é 600, o usuário dojo não o lê)
+EnvironmentFile=/etc/dojo/dojo.env
+WorkingDirectory=/opt/dojo/app
+ExecStart=/usr/bin/python3 /opt/dojo/app/collector/collect.py
+# Só escreve o JSON; o resto do sistema fica só para leitura
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/var/lib/dojo

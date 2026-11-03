@@ -49,7 +49,7 @@ a:hover { color: var(--workout-hover); }
   font-weight: 800;
 }
 
-.masthead { display: flex; flex-direction: column; gap: 10px; }
+.masthead { display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; }
 .masthead-tags { display: flex; align-items: center; gap: 12px; }
 
 .tag {
@@ -66,8 +66,8 @@ a:hover { color: var(--workout-hover); }
   margin: 0;
   font-family: var(--display);
   font-weight: 900;
-  font-size: clamp(72px, 14vw, 128px);
-  line-height: 0.82;
+  font-size: clamp(40px, 8vw, 80px);
+  line-height: 0.9;
   letter-spacing: 0.01em;
 }
 

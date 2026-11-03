@@ -8,8 +8,8 @@ Instruções para agentes de IA (Claude Code, Codex, Antigravity etc.) trabalhan
 um **quadrinho de frequência**, como o do GitHub, juntando várias fontes num só: cada dia ganha uma cor
 conforme a combinação de atividades feitas.
 
-> Status: **coletor e página prontos**, testados no PC com dados reais. Falta a instalação na VPS e as
-> estatísticas do topo.
+> Status: **no ar na VPS** (coleta de hora em hora; instalação e operação em `deploy/README.md`). Falta
+> decidir as estatísticas do topo.
 >
 > Ver no PC: rode o coletor (o JSON vai para `web/activity.json`, ignorado pelo Git) e
 > `python -m http.server 8090 --bind 127.0.0.1 -d web`, depois abra `http://localhost:8090`.

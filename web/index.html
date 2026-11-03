@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dojo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800;900&family=Martian+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script src="app.js" defer></script>
+</head>
+<body>
+<main class="page">
+  <header class="masthead">
+    <div class="masthead-tags">
+      <span class="tag">PAINEL PESSOAL</span>
+      <span class="muted caps">ÚLTIMOS 12 MESES</span>
+    </div>
+    <h1 class="title">DOJO</h1>
+  </header>
+
+  <section class="card" aria-labelledby="freq-title">
+    <div class="card-head">
+      <h2 id="freq-title" class="card-title">FREQUÊNCIA</h2>
+      <ul class="legend" aria-label="Legenda">
+        <li><span class="swatch" data-kind="0"></span>nada</li>
+        <li><span class="swatch" data-kind="1"></span>código</li>
+        <li><span class="swatch" data-kind="2"></span>treino</li>
+        <li><span class="swatch" data-kind="3"></span>os dois</li>
+      </ul>
+    </div>
+
+    <div class="grid-scroll" id="grid-scroll">
+      <div class="grid" id="grid">
+        <div class="weekdays" aria-hidden="true">
+          <span></span><span></span><span>SEG</span><span></span><span>QUA</span><span></span><span>SEX</span><span></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="selection">
+      <div class="selection-date" id="sel-date">—</div>
+      <div class="selection-info">
+        <span class="muted" id="sel-weekday"></span>
+        <span class="accent" aria-hidden="true">▸</span>
+        <span id="sel-text" aria-live="polite">carregando…</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="slots" aria-label="Próximas seções">
+    <div class="slot"><div class="slot-head"><span class="slot-name">PESO</span><span class="slot-src">API TREINOS</span></div><div class="slot-soon">EM BREVE</div></div>
+    <div class="slot"><div class="slot-head"><span class="slot-name">TAREFAS</span><span class="slot-src">ALICE</span></div><div class="slot-soon">EM BREVE</div></div>
+    <div class="slot"><div class="slot-head"><span class="slot-name">GASTOS</span><span class="slot-src">ALICE</span></div><div class="slot-soon">EM BREVE</div></div>
+    <div class="slot"><div class="slot-head"><span class="slot-name">PLANNER</span><span class="slot-src">PLANNER</span></div><div class="slot-soon">EM BREVE</div></div>
+  </section>
+
+  <footer class="footer" id="footer">Passe o mouse ou use Tab nos dias para ver o detalhe.</footer>
+</main>
+</body>
+</html>

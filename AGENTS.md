@@ -4,12 +4,15 @@ Instruções para agentes de IA (Claude Code, Codex, Antigravity etc.) trabalhan
 
 ## O que é
 
-**Dojo**: painel pessoal, uma página com informações do ecossistema pessoal (ALICE, Treinos, Planner e o que vier). Começa por
+**Dojo** (*DOJO's Obviously Just Overkill*, acrônimo recursivo): painel pessoal, uma página com informações do ecossistema pessoal (ALICE, Treinos, Planner e o que vier). Começa por
 um **quadrinho de frequência**, como o do GitHub, juntando várias fontes num só: cada dia ganha uma cor
 conforme a combinação de atividades feitas.
 
-> Status: **coletor pronto** (`collector/collect.py`), testado no PC com as três fontes. Falta a página e a
-> instalação na VPS.
+> Status: **coletor e página prontos**, testados no PC com dados reais. Falta a instalação na VPS e as
+> estatísticas do topo.
+>
+> Ver no PC: rode o coletor (o JSON vai para `web/activity.json`, ignorado pelo Git) e
+> `python -m http.server 8090 --bind 127.0.0.1 -d web`, depois abra `http://localhost:8090`.
 >
 > Rodar no PC: `.env` na raiz (ver `.env.example`) e `GITHUB_TOKEN="$(gh auth token)" python collector/collect.py`.
 > Para os treinos, abrir antes o túnel da API (`ssh -N -L 8781:127.0.0.1:5265 alice-vm`) e usar

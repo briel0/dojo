@@ -1,0 +1,223 @@
+/* Visual do mockup "Dojo · placar" (decisão 13 do AGENTS.md) */
+:root {
+  --bg: #101014;
+  --surface: #1A1A22;
+  --border: #2C2C38;
+  --empty: #23232D;
+  --text: #F4F4F0;
+  --muted: #9A9AA8;
+  --code: #3D7BFF;
+  --workout: #FFB000;
+  --workout-hover: #FFC94D;
+  --display: 'Big Shoulders Display', sans-serif;
+  --mono: 'Martian Mono', ui-monospace, monospace;
+  --cell: 14px;
+  --gap: 4px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--mono);
+}
+
+a { color: var(--workout); }
+a:hover { color: var(--workout-hover); }
+
+.page {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 48px 24px 64px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+/* Sem isso, o quadrinho (mais largo que a tela) alarga a página inteira no celular */
+.page > * { min-width: 0; }
+
+.muted { color: var(--muted); }
+.accent { color: var(--workout); }
+.caps { font-size: 12px; letter-spacing: 0.08em; }
+
+/* Etiquetas com o canto direito cortado na diagonal */
+.tag, .card-title, .selection-date {
+  font-family: var(--display);
+  font-weight: 800;
+}
+
+.masthead { display: flex; flex-direction: column; gap: 10px; }
+.masthead-tags { display: flex; align-items: center; gap: 12px; }
+
+.tag {
+  display: inline-block;
+  background: var(--workout);
+  color: var(--bg);
+  font-size: 15px;
+  letter-spacing: 0.12em;
+  padding: 5px 22px 5px 12px;
+  clip-path: polygon(0 0, 100% 0, calc(100% - 12px) 100%, 0 100%);
+}
+
+.title {
+  margin: 0;
+  font-family: var(--display);
+  font-weight: 900;
+  font-size: clamp(72px, 14vw, 128px);
+  line-height: 0.82;
+  letter-spacing: 0.01em;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+}
+
+.card-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-right: 20px;
+}
+
+.card-title {
+  margin: 0;
+  background: var(--text);
+  color: var(--bg);
+  font-size: 22px;
+  letter-spacing: 0.08em;
+  padding: 8px 40px 8px 20px;
+  clip-path: polygon(0 0, 100% 0, calc(100% - 18px) 100%, 0 100%);
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+}
+
+.legend li { display: inline-flex; align-items: center; gap: 8px; }
+.swatch { width: 12px; height: 12px; }
+
+/* As cores de cada combinação: código, treino, os dois (diagonal) e nada */
+[data-kind="0"] { background: var(--empty); }
+[data-kind="1"] { background: var(--code); }
+[data-kind="2"] { background: var(--workout); }
+[data-kind="3"] { background: linear-gradient(135deg, var(--code) 50%, var(--workout) 50%); }
+[data-kind="future"] { background: transparent; box-shadow: inset 0 0 0 1px var(--border); }
+
+.grid-scroll { overflow-x: auto; padding: 24px 20px 20px; }
+.grid { display: flex; gap: var(--gap); width: max-content; }
+
+.weekdays, .week { display: flex; flex-direction: column; gap: var(--gap); }
+/* Os dias da semana ficam visíveis enquanto o quadrinho rola para os lados */
+.weekdays {
+  position: sticky;
+  left: -20px;
+  z-index: 1;
+  margin-left: -20px;
+  padding: 0 6px 0 20px;
+  background: var(--surface);
+  font-size: 10px;
+  color: var(--muted);
+}
+.weekdays span:first-child { height: 18px; }
+.weekdays span { height: var(--cell); line-height: var(--cell); }
+
+.month {
+  height: 18px;
+  width: var(--cell);
+  overflow: visible;
+  white-space: nowrap;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
+.cell {
+  width: var(--cell);
+  height: var(--cell);
+  padding: 0;
+  border: 0;
+  display: block;
+  cursor: pointer;
+}
+
+.cell[data-kind="future"] { cursor: default; }
+.cell.today { outline: 2px solid var(--workout); outline-offset: 1px; }
+.cell.selected, .cell:focus-visible { outline: 2px solid var(--text); outline-offset: 1px; }
+
+.selection {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  border-top: 1px solid var(--border);
+}
+
+.selection-date {
+  background: var(--workout);
+  color: var(--bg);
+  font-size: 26px;
+  letter-spacing: 0.04em;
+  padding: 12px 34px 12px 20px;
+  clip-path: polygon(0 0, 100% 0, calc(100% - 16px) 100%, 0 100%);
+  display: flex;
+  align-items: center;
+}
+
+.selection-info {
+  flex: 1 1 320px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 20px;
+  font-size: 14px;
+  letter-spacing: 0.02em;
+}
+
+.slots {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 4px;
+}
+
+.slot {
+  background: var(--surface);
+  border-top: 3px solid var(--border);
+  padding: 16px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-height: 120px;
+}
+
+.slot-head { display: flex; justify-content: space-between; align-items: baseline; }
+.slot-name { font-family: var(--display); font-weight: 800; font-size: 22px; letter-spacing: 0.08em; }
+.slot-src { font-size: 10px; letter-spacing: 0.1em; color: var(--muted); }
+
+.slot-soon {
+  height: 44px;
+  border: 1px dashed var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.06em;
+}
+
+.footer { font-size: 11px; color: var(--muted); letter-spacing: 0.04em; line-height: 1.7; }
+.footer .error { color: var(--workout); }

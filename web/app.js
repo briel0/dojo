@@ -134,7 +134,7 @@ function renderForYou(data) {
   document.getElementById('foryou-why').textContent = next.dias === null
     ? `sem registro nos últimos ${foryou.janela_dias} dias`
     : `o que você não faz há mais tempo (${sinceText(next.dias)})`;
-  document.getElementById('foryou-src').textContent = `ÚLTIMOS ${foryou.janela_dias} DIAS · API TREINOS`;
+  document.getElementById('foryou-src').textContent = `${foryou.janela_dias} DIAS · API TREINOS`;
 
   const list = document.getElementById('foryou-list');
   for (const item of foryou.treinos) {

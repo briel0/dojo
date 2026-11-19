@@ -199,13 +199,63 @@ a:hover { color: var(--workout-hover); }
   letter-spacing: 0.02em;
 }
 
-/* "For you" (decisão 17): mesma estrutura da FREQUÊNCIA, com o conteúdo no meio e o destaque na faixa
-   âmbar do rodapé do card */
+/* "For you" (decisão 17): o card é um contêiner de caixinhas, uma por recomendação, no estilo dos
+   blocos "EM BREVE". A borda de cima de cada caixinha tem a cor da atividade (--rec-color) */
 .foryou-src { font-size: 10px; letter-spacing: 0.1em; color: var(--muted); }
+
+.recs {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr));
+  gap: 4px;
+  padding: 20px;
+}
+
+.rec {
+  --rec-color: var(--text);
+  background: var(--bg);
+  border-top: 3px solid var(--rec-color);
+  padding: 16px 20px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.rec .slot-name { margin: 0; }
+
+/* Lugar das próximas recomendações: ocupa o resto da linha, como os blocos "EM BREVE" */
+.rec-soon {
+  grid-column: span 2;
+  min-height: 120px;
+  border: 1px dashed var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.06em;
+}
+
+@media (max-width: 1100px) { .rec-soon { grid-column: auto; } }
+
+.rec-pick { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+.rec-label { font-size: 11px; letter-spacing: 0.1em; color: var(--muted); }
+
+.rec-tag {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 26px;
+  letter-spacing: 0.04em;
+  background: var(--rec-color);
+  color: var(--bg);
+  padding: 6px 30px 6px 14px;
+  clip-path: polygon(0 0, 100% 0, calc(100% - 14px) 100%, 0 100%);
+}
+
+.rec-why { font-size: 12px; color: var(--muted); letter-spacing: 0.02em; }
 
 .foryou-list {
   margin: 0;
-  padding: 16px 20px 12px;
+  padding: 0;
   list-style: none;
 }
 

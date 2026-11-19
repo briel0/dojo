@@ -50,18 +50,24 @@
   <section class="card" id="foryou" aria-labelledby="foryou-title" hidden>
     <div class="card-head">
       <h2 id="foryou-title" class="card-title">FOR YOU</h2>
-      <span class="foryou-src" id="foryou-src">PRÓXIMO TREINO</span>
+      <span class="foryou-src">ATUALIZA DE HORA EM HORA</span>
     </div>
 
-    <ol class="foryou-list" id="foryou-list"></ol>
-
-    <div class="selection">
-      <div class="selection-date" id="foryou-name">—</div>
-      <div class="selection-info">
-        <span class="muted">HOJE</span>
-        <span class="accent" aria-hidden="true">▸</span>
-        <span id="foryou-why"></span>
-      </div>
+    <!-- Uma caixinha por recomendação; a borda de cima tem a cor da atividade, como no quadrinho -->
+    <div class="recs">
+      <article class="rec" style="--rec-color: var(--workout)" aria-labelledby="rec-treino-title">
+        <div class="slot-head">
+          <h3 class="slot-name" id="rec-treino-title">TREINO</h3>
+          <span class="slot-src" id="foryou-src">API TREINOS</span>
+        </div>
+        <div class="rec-pick">
+          <span class="rec-label">PRÓXIMO TREINO <span class="accent" aria-hidden="true">▸</span></span>
+          <span class="rec-tag" id="foryou-name">—</span>
+          <span class="rec-why" id="foryou-why"></span>
+        </div>
+        <ol class="foryou-list" id="foryou-list"></ol>
+      </article>
+      <div class="rec-soon" aria-hidden="true">MAIS RECOMENDAÇÕES EM BREVE</div>
     </div>
   </section>
 

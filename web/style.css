@@ -199,15 +199,18 @@ a:hover { color: var(--workout-hover); }
   letter-spacing: 0.02em;
 }
 
-/* "For you" (decisão 17): o destaque reaproveita a faixa da seleção do quadrinho */
+/* "For you" (decisão 17): mesma estrutura da FREQUÊNCIA, com o conteúdo no meio e o destaque na faixa
+   âmbar do rodapé do card */
 .foryou-src { font-size: 10px; letter-spacing: 0.1em; color: var(--muted); }
-.foryou-pick { margin-top: 20px; }
 
 .foryou-list {
   margin: 0;
-  padding: 8px 20px 16px;
+  padding: 16px 20px 12px;
   list-style: none;
 }
+
+.foryou-list li:first-child .foryou-name,
+.foryou-list li:first-child .foryou-since { color: var(--workout); }
 
 .foryou-list li {
   display: grid;

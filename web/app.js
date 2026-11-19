@@ -3,7 +3,9 @@
 
 const MONTHS = ['JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ'];
 const WEEKDAYS = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'];
-const SOURCE_NAMES = { github: 'GitHub', codeforces: 'Codeforces', workout: 'Treinos', teaching: 'Aulas' };
+const SOURCE_NAMES = {
+  github: 'GitHub', codeforces: 'Codeforces', workout: 'Treinos', teaching: 'Aulas', foryou: 'For you',
+};
 // Atividades que pintam a célula, na ordem em que a dividem (decisões 3 e 4). A aula não pinta:
 // vira um quadradinho discreto no meio da célula (decisão 16).
 const ACTIVITIES = [
@@ -109,7 +111,50 @@ function render(data) {
   // Em telas estreitas, mostra o fim (hoje) primeiro
   const scroll = document.getElementById('grid-scroll');
   scroll.scrollLeft = scroll.scrollWidth;
+  renderForYou(data);
   renderFooter(data);
+}
+
+function sinceText(days) {
+  if (days === null) return 'sem registro';
+  if (days === 0) return 'hoje';
+  if (days === 1) return 'ontem';
+  return `${days} dias`;
+}
+
+/**
+ * "For you": o treino feito há mais tempo em destaque e a lista inteira embaixo, já na ordem do coletor
+ * (decisão 17). Sem arquivo de definições no coletor, a seção fica escondida.
+ */
+function renderForYou(data) {
+  const foryou = data.foryou;
+  if (!foryou || !foryou.treinos || foryou.treinos.length === 0) return;
+  const [next] = foryou.treinos;
+  document.getElementById('foryou-name').textContent = next.nome.toUpperCase();
+  document.getElementById('foryou-why').textContent = next.dias === null
+    ? `sem registro nos últimos ${foryou.janela_dias} dias`
+    : `o que você não faz há mais tempo (${sinceText(next.dias)})`;
+  document.getElementById('foryou-src').textContent = `ÚLTIMOS ${foryou.janela_dias} DIAS · API TREINOS`;
+
+  const list = document.getElementById('foryou-list');
+  for (const item of foryou.treinos) {
+    const row = document.createElement('li');
+    const name = document.createElement('span');
+    name.className = 'foryou-name';
+    name.textContent = item.nome;
+    const since = document.createElement('span');
+    since.className = item.dias === null ? 'foryou-since muted' : 'foryou-since';
+    since.textContent = sinceText(item.dias);
+    const when = document.createElement('span');
+    when.className = 'foryou-when muted';
+    if (item.ultimo) {
+      const date = parseDay(item.ultimo);
+      when.textContent = `${String(date.getUTCDate()).padStart(2, '0')} ${MONTHS[date.getUTCMonth()]}`;
+    }
+    row.append(name, since, when);
+    list.append(row);
+  }
+  document.getElementById('foryou').hidden = false;
 }
 
 function renderFooter(data) {

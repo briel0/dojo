@@ -1,0 +1,7 @@
+{
+ "treinos": [
+  { "nome": "Push", "grupos": ["chest", "shoulders", "triceps"] },
+  { "nome": "Pull", "grupos": ["back", "biceps"] },
+  { "nome": "Legs", "grupos": ["quadriceps", "hamstrings", "glutes", "calves"] }
+ ]
+}

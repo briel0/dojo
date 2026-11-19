@@ -20,5 +20,8 @@ sudo systemctl daemon-reload && sudo systemctl enable --now dojo-collector.timer
 - Atualizar: `sudo -u dojo git -C /opt/dojo/app pull --ff-only` (a página muda na hora; o coletor, na próxima coleta).
 - Coletar agora: `sudo systemctl start dojo-collector`. Ver o resultado: `journalctl -u dojo-collector -n 20`.
 - Abrir no PC: `ssh -N -L 8082:127.0.0.1:8082 alice-vm` e `http://localhost:8082`.
+- "For you" (decisão 17): definições em `/etc/dojo/treinos.json` (modelo em `collector/treinos.example.json`),
+  legível pelo coletor (`sudo install -o root -g dojo -m 640 treinos.json /etc/dojo/treinos.json`), e
+  `TREINOS_PLANO_PATH=/etc/dojo/treinos.json` no `dojo.env`.
 - O token do GitHub expira: quando o rodapé da página disser que o GitHub falhou, gere outro e troque em
   `/etc/dojo/dojo.env`.

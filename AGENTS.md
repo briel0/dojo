@@ -50,6 +50,7 @@ de seguir.
 | 14 | Fonte das aulas | demonstrativos mensais de repasse em PDF, lidos no PC por `collector/import_aulas.py` (`pdftotext`). Só entram aulas ao vivo (vídeos gravados ficam de fora); guarda só dia e horário, nunca valores nem turmas. O JSON vai para `/var/lib/dojo/aulas.json` na VPS | digitar os dias à mão; guardar o demonstrativo inteiro |
 | 15 | Favicon | SVG com quatro células do quadrinho (código, treino, um dia só com aula e um dia com as três) | letra ou logotipo (a fonte do título não carrega num SVG de favicon) |
 | 16 | Peso da aula no quadrinho | aula é trabalho com horário marcado e enchia o quadrinho; não pinta a célula, vira um quadradinho azul de 4px no meio dela. Só código e treino dividem a célula em faixas | seletor na legenda para ligar e desligar atividades; tirar as aulas do quadrinho e mostrar só um número |
+| 17 | "For you": próximo treino | seção abaixo da FREQUÊNCIA que destaca o treino definido feito há mais tempo e lista todos, com dias e data. As definições (nome e grupos musculares do Treinos) ficam num arquivo fora do repositório (`TREINOS_PLANO_PATH`; modelo em `collector/treinos.example.json`); sem ele, a seção não aparece. Calculado no coletor, de hora em hora, olhando só os últimos 20 dias. Um treino definido conta num treino registrado se os grupos dele somarem pelo menos 1/3 das séries válidas (só grupo principal, sem aquecimento, série falhada conta), para o acessório solto não marcar outro treino. Treinos sem exercícios (GymRats) não contam. "Sem registro" vem antes de tudo; empate segue a ordem do arquivo | Gemini escrevendo a recomendação (gasta cota e muda a cada carga); lógica na página com proxy do nginx até o Treinos; reconhecer por exercícios (quebra ao trocar um) ou por marcação manual; contar qualquer grupo presente; palavras-chave nos títulos do GymRats; a ALICE disparar o coletor a cada treino |
 
 Adiado: as estatísticas do topo do mockup (sequência atual, recorde, dias completos). Falta decidir o que conta
 para cada uma.
@@ -74,7 +75,8 @@ dojo/
 
 - **GitHub**: calendário de contribuições pela API GraphQL, com token (as contribuições privadas exigem).
 - **Codeforces**: submissões pela API pública (`user.status`), sem token.
-- **Treinos**: treinos por período pela API (`GET /api/workouts?since=&until=`), dentro da VPS.
+- **Treinos**: treinos por período pela API (`GET /api/workouts?since=&until=`), dentro da VPS; o "For you"
+  também lê os grupos musculares dos exercícios (`GET /api/exercises`).
 
 ## Configuração
 

@@ -51,6 +51,8 @@ de seguir.
 | 15 | Favicon | SVG com quatro células do quadrinho (código, treino, um dia só com aula e um dia com as três) | letra ou logotipo (a fonte do título não carrega num SVG de favicon) |
 | 16 | Peso da aula no quadrinho | aula é trabalho com horário marcado e enchia o quadrinho; não pinta a célula, vira um quadradinho azul de 4px no meio dela. Só código e treino dividem a célula em faixas | seletor na legenda para ligar e desligar atividades; tirar as aulas do quadrinho e mostrar só um número |
 | 17 | "For you": próximo treino | card abaixo da FREQUÊNCIA com uma caixinha por recomendação (borda de cima na cor da atividade; o resto da linha fica com "em breve"). A primeira é TREINO, que destaca o treino definido feito há mais tempo e lista todos, com dias e data. As definições (nome e grupos musculares do Treinos) ficam num arquivo fora do repositório (`TREINOS_PLANO_PATH`; modelo em `collector/treinos.example.json`); sem ele, a seção não aparece. Calculado no coletor, de hora em hora, olhando só os últimos 20 dias. Um treino definido conta num treino registrado se os grupos dele somarem pelo menos 1/3 das séries válidas (só grupo principal, sem aquecimento, série falhada conta), para o acessório solto não marcar outro treino. Treinos sem exercícios (GymRats) não contam. "Sem registro" vem antes de tudo; empate segue a ordem do arquivo | Gemini escrevendo a recomendação (gasta cota e muda a cada carga); lógica na página com proxy do nginx até o Treinos; reconhecer por exercícios (quebra ao trocar um) ou por marcação manual; contar qualquer grupo presente; palavras-chave nos títulos do GymRats; a ALICE disparar o coletor a cada treino |
+| 18 | ACs do GRUB no quadrinho | fonte `grub`: problemas diferentes com AC por dia no grubufabc.com, pela rota pública do perfil (`GET /api/v1/users/{id}/stats`, já no calendário de Brasília), contando como **código**. Só AC, porque é o que a rota pública devolve (no Codeforces conta qualquer submissão, decisão 9). A rota cobre 27 semanas; os dias mais antigos vêm da coleta anterior. Id do perfil em `GRUB_USER_ID` | atividade própria no quadrinho (o GRUB é codar); sessão do site para ver as submissões (o token expira e é credencial) |
+| 19 | Card GRUB no "For you" | o problema do dia **ao vivo**: a página busca pelo nginx, que repassa só as rotas públicas `GET /api/v1/daily`, `/daily/days/{data}` e `/daily/month`, sem cookies. Destaque: EM ABERTO (contagem regressiva e "sequência em risco", que vem do ranking do mês), RESOLVIDO · posição, FECHADO ou FORA DO AR. Ranking do dia: top 5 se o dono não resolveu; senão top 3 e a vizinhança dele. O id chega à página pelo `activity.json`. As caixinhas vão por urgência: GRUB aberto e não resolvido vem antes do TREINO | coletor de hora em hora (o dia abre às 13h30 e o ranking ficaria até uma hora atrasado); timer só do GRUB a cada 10 min (processos na VM de 512 MB); ranking do mês em destaque; ordem fixa |
 
 Adiado: as estatísticas do topo do mockup (sequência atual, recorde, dias completos). Falta decidir o que conta
 para cada uma.
@@ -77,6 +79,8 @@ dojo/
 - **Codeforces**: submissões pela API pública (`user.status`), sem token.
 - **Treinos**: treinos por período pela API (`GET /api/workouts?since=&until=`), dentro da VPS; o "For you"
   também lê os grupos musculares dos exercícios (`GET /api/exercises`).
+- **GRUB** (grubufabc.com): ACs por dia pela rota pública do perfil (coletor) e o problema do dia ao vivo pelo
+  proxy do nginx (página). Sem token.
 
 ## Configuração
 

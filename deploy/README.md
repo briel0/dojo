@@ -23,5 +23,8 @@ sudo systemctl daemon-reload && sudo systemctl enable --now dojo-collector.timer
 - "For you" (decisão 17): definições em `/etc/dojo/treinos.json` (modelo em `collector/treinos.example.json`),
   legível pelo coletor (`sudo install -o root -g dojo -m 640 treinos.json /etc/dojo/treinos.json`), e
   `TREINOS_PLANO_PATH=/etc/dojo/treinos.json` no `dojo.env`.
+- GRUB (decisões 18 e 19): `GRUB_USER_ID=<id do perfil>` no `dojo.env`. O site do nginx repassa o problema do
+  dia para `api.grubufabc.com`; depois de atualizar `deploy/nginx-dojo.conf`, copie de novo para
+  `/etc/nginx/sites-available/dojo` e rode `sudo nginx -t && sudo systemctl reload nginx`.
 - O token do GitHub expira: quando o rodapé da página disser que o GitHub falhou, gere outro e troque em
   `/etc/dojo/dojo.env`.

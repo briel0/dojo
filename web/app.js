@@ -4,12 +4,12 @@
 const MONTHS = ['JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ'];
 const WEEKDAYS = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'];
 const SOURCE_NAMES = {
-  github: 'GitHub', codeforces: 'Codeforces', workout: 'Treinos', teaching: 'Aulas', foryou: 'For you',
+  github: 'GitHub', codeforces: 'Codeforces', grub: 'GRUB', workout: 'Treinos', teaching: 'Aulas', foryou: 'For you',
 };
 // Atividades que pintam a célula, na ordem em que a dividem (decisões 3 e 4). A aula não pinta:
 // vira um quadradinho discreto no meio da célula (decisão 16).
 const ACTIVITIES = [
-  { name: 'código', color: 'var(--code)', done: (c) => (c.github || 0) + (c.codeforces || 0) > 0 },
+  { name: 'código', color: 'var(--code)', done: (c) => (c.github || 0) + (c.codeforces || 0) + (c.grub || 0) > 0 },
   { name: 'treino', color: 'var(--workout)', done: (c) => (c.workout || 0) > 0 },
 ];
 const taught = (c) => (c.teaching || 0) > 0;
@@ -29,6 +29,7 @@ function describe(counts) {
   const parts = [];
   if (counts.github) parts.push(plural(counts.github, 'contribuição', 'contribuições'));
   if (counts.codeforces) parts.push(plural(counts.codeforces, 'submissão', 'submissões'));
+  if (counts.grub) parts.push(`${plural(counts.grub, 'AC', 'ACs')} no GRUB`);
   if (counts.workout) parts.push(plural(counts.workout, 'treino', 'treinos'));
   if (counts.teaching) parts.push(plural(counts.teaching, 'aula', 'aulas'));
   return parts.length ? parts.join(' · ') : 'descanso';
@@ -112,6 +113,7 @@ function render(data) {
   const scroll = document.getElementById('grid-scroll');
   scroll.scrollLeft = scroll.scrollWidth;
   renderForYou(data);
+  renderGrub(data);
   renderFooter(data);
 }
 
@@ -154,6 +156,7 @@ function renderForYou(data) {
     row.append(name, since, when);
     list.append(row);
   }
+  document.getElementById('rec-treino').hidden = false;
   document.getElementById('foryou').hidden = false;
 }
 
@@ -169,6 +172,139 @@ function renderFooter(data) {
     line.className = 'error';
     line.textContent = `${SOURCE_NAMES[source] || source}: falhou na última coleta (${status.error}); mostrando os dados anteriores.`;
     footer.append(line);
+  }
+}
+
+// Card GRUB (decisão 19): o problema do dia ao vivo, pelo proxy do nginx só para as rotas públicas
+// (/grub/api/v1/daily...). Horários em Brasília, como no site do GRUB.
+const GRUB = '/grub/api/v1/daily';
+const GRUB_VISIBLE = 5; // ranking: top 5 quando o dono não resolveu; senão top 3 e a vizinhança dele
+const timeBR = (iso) => new Date(iso).toLocaleTimeString('pt-BR', {
+  hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo',
+});
+
+async function grubJSON(path) {
+  const response = await fetch(GRUB + path, { cache: 'no-store' });
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  return response.json();
+}
+
+function untilText(ms) {
+  const minutes = Math.max(0, Math.round(ms / 60000));
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return h ? `${h}h${String(m).padStart(2, '0')}` : `${m} min`;
+}
+
+/** As linhas do ranking: top 3 + vizinhos do dono (se ele resolveu) ou o top 5, com "…" nos saltos. */
+function rankingRows(ranking, meIndex) {
+  const keep = new Set();
+  if (meIndex < 0) ranking.slice(0, GRUB_VISIBLE).forEach((_, i) => keep.add(i));
+  else {
+    for (let i = 0; i < Math.min(3, ranking.length); i++) keep.add(i);
+    for (let i = meIndex - 1; i <= meIndex + 1; i++) if (i >= 0 && i < ranking.length) keep.add(i);
+  }
+  const rows = [];
+  let last = -1;
+  for (const i of [...keep].sort((a, b) => a - b)) {
+    if (last >= 0 && i > last + 1) rows.push(null);
+    rows.push(ranking[i]);
+    last = i;
+  }
+  return rows;
+}
+
+function renderGrubRanking(ranking, userId) {
+  const list = document.getElementById('grub-list');
+  list.replaceChildren();
+  const meIndex = ranking.findIndex((entry) => entry.user_id === userId);
+  for (const entry of rankingRows(ranking, meIndex)) {
+    const row = document.createElement('li');
+    if (!entry) {
+      row.className = 'gap';
+      row.textContent = '…';
+      list.append(row);
+      continue;
+    }
+    if (entry.user_id === userId) row.className = 'is-me';
+    const name = document.createElement('span');
+    name.className = 'foryou-name';
+    name.textContent = `${entry.rank}º ${entry.user_id === userId ? 'você' : entry.name}`;
+    const penalty = document.createElement('span');
+    penalty.className = 'foryou-since';
+    penalty.textContent = `${entry.penalty} min`;
+    const streak = document.createElement('span');
+    streak.className = 'foryou-when muted';
+    streak.textContent = entry.streak ? `seq. ${entry.streak}` : '';
+    row.append(name, penalty, streak);
+    list.append(row);
+  }
+  return meIndex >= 0 ? ranking[meIndex] : null;
+}
+
+let grubTimer = null;
+
+async function renderGrub(data) {
+  if (!data.grub || !data.grub.user_id) return;
+  const box = document.getElementById('rec-grub');
+  const userId = data.grub.user_id;
+  const state = document.getElementById('grub-state');
+  const title = document.getElementById('grub-title');
+  const why = document.getElementById('grub-why');
+  const foot = document.getElementById('grub-foot');
+  box.hidden = false;
+  document.getElementById('foryou').hidden = false;
+  clearInterval(grubTimer);
+  try {
+    const daily = await grubJSON('');
+    if (daily.state === 'none' || !daily.day) {
+      box.classList.remove('urgent');
+      state.textContent = 'FECHADO';
+      title.textContent = '';
+      why.textContent = daily.next_opens_at ? `o próximo abre às ${timeBR(daily.next_opens_at)}` : 'nenhum problema do dia ainda';
+      document.getElementById('grub-list').replaceChildren();
+      foot.textContent = '';
+      return;
+    }
+    const day = await grubJSON(`/days/${daily.day.date}`);
+    title.textContent = daily.day.problem.title;
+    const mine = renderGrubRanking(day.ranking, userId);
+    foot.textContent = `${plural(day.solvers, 'pessoa resolveu', 'pessoas resolveram')}`;
+    const open = daily.state === 'open';
+    box.classList.toggle('urgent', open && !mine);
+
+    if (mine) {
+      state.textContent = `RESOLVIDO · ${mine.rank}º`;
+      why.textContent = `penalidade de ${mine.penalty} min${mine.streak ? ` · sequência de ${mine.streak}` : ''}`;
+    } else if (open) {
+      state.textContent = 'EM ABERTO';
+      // A sequência só aparece no ranking do mês enquanto o dono não resolveu o dia
+      let streak = 0;
+      try {
+        const month = await grubJSON(`/month?m=${daily.day.date.slice(0, 7)}`);
+        streak = (month.ranking.find((entry) => entry.user_id === userId) || {}).streak || 0;
+      } catch { /* sem a sequência, o card segue */ }
+      const tick = () => {
+        const left = new Date(daily.day.closes_at) - Date.now();
+        if (left <= 0) {
+          clearInterval(grubTimer);
+          renderGrub(data);
+          return;
+        }
+        why.textContent = `fecha em ${untilText(left)}${streak ? ` · sequência de ${streak} em risco` : ''}`;
+      };
+      tick();
+      grubTimer = setInterval(tick, 30000);
+    } else {
+      state.textContent = 'FECHADO';
+      why.textContent = `ranking final · o próximo abre às ${timeBR(daily.next_opens_at)}`;
+    }
+  } catch (error) {
+    box.classList.remove('urgent');
+    state.textContent = 'FORA DO AR';
+    title.textContent = '';
+    why.textContent = `não consegui falar com o GRUB (${error.message})`;
+    foot.textContent = '';
   }
 }
 

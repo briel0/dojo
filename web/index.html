@@ -50,12 +50,12 @@
   <section class="card" id="foryou" aria-labelledby="foryou-title" hidden>
     <div class="card-head">
       <h2 id="foryou-title" class="card-title">FOR YOU</h2>
-      <span class="foryou-src">ATUALIZA DE HORA EM HORA</span>
+      <span class="foryou-src">MAIS URGENTE PRIMEIRO</span>
     </div>
 
     <!-- Uma caixinha por recomendação; a borda de cima tem a cor da atividade, como no quadrinho -->
     <div class="recs">
-      <article class="rec" style="--rec-color: var(--workout)" aria-labelledby="rec-treino-title">
+      <article class="rec" id="rec-treino" style="--rec-color: var(--workout)" aria-labelledby="rec-treino-title" hidden>
         <div class="slot-head">
           <h3 class="slot-name" id="rec-treino-title">TREINO</h3>
           <span class="slot-src" id="foryou-src">API TREINOS</span>
@@ -66,6 +66,20 @@
           <span class="rec-why" id="foryou-why"></span>
         </div>
         <ol class="foryou-list" id="foryou-list"></ol>
+      </article>
+      <article class="rec" id="rec-grub" style="--rec-color: var(--code)" aria-labelledby="rec-grub-title" hidden>
+        <div class="slot-head">
+          <h3 class="slot-name" id="rec-grub-title">GRUB</h3>
+          <span class="slot-src">API GRUB · AO VIVO</span>
+        </div>
+        <div class="rec-pick">
+          <span class="rec-label">PROBLEMA DO DIA <span class="accent" aria-hidden="true">▸</span></span>
+          <span class="rec-tag" id="grub-state">—</span>
+          <a class="rec-title" id="grub-title" href="https://grubufabc.com/problems/daily" target="_blank" rel="noopener"></a>
+          <span class="rec-why" id="grub-why"></span>
+        </div>
+        <ol class="foryou-list" id="grub-list"></ol>
+        <span class="rec-why" id="grub-foot"></span>
       </article>
       <div class="rec-soon" aria-hidden="true">MAIS RECOMENDAÇÕES EM BREVE</div>
     </div>

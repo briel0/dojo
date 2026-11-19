@@ -21,7 +21,9 @@ BRT = timezone(timedelta(hours=-3), "America/Sao_Paulo")
 DAYS = 371  # 53 semanas: o quadrinho mostra o último ano em colunas completas
 TIMEOUT_SECONDS = 30
 ROOT = Path(__file__).resolve().parent.parent
-SOURCES = ("github", "codeforces", "workout", "teaching")
+SOURCES = ("github", "codeforces", "grub", "workout", "teaching")
+GRUB_API = "https://api.grubufabc.com"
+GRUB_WINDOW_DAYS = 27 * 7  # a rota pública do GRUB só devolve as últimas 27 semanas
 FORYOU_DAYS = 20  # o "For you" só olha os últimos 20 dias; o que for mais antigo vira "sem registro"
 FORYOU_MIN_SHARE = 1 / 3  # parte mínima das séries válidas do treino para um treino definido contar
 
@@ -110,6 +112,23 @@ def workout_counts(api_url: str, start: date, end: date) -> dict[str, int]:
     for workout in workouts:
         day = datetime.fromisoformat(workout["startedAt"]).astimezone(BRT).date().isoformat()
         counts[day] = counts.get(day, 0) + 1
+    return counts
+
+
+def grub_counts(user_id: str, start: date, end: date, previous: dict[str, int]) -> dict[str, int]:
+    """Problemas diferentes com AC por dia no GRUB (já no calendário de Brasília), pela rota pública do perfil.
+
+    Só conta AC: é o que a rota pública devolve (decisão 18). Ela cobre só as últimas 27 semanas; os dias
+    mais antigos vêm da coleta anterior, para não sumirem do quadrinho. O primeiro dia da janela pode vir
+    pela metade, então fica com o maior dos dois valores.
+    """
+    api = (os.environ.get("GRUB_API_URL") or GRUB_API).rstrip("/")
+    stats = request_json(f"{api}/api/v1/users/{urllib.parse.quote(user_id)}/stats")
+    cutoff = (end - timedelta(days=GRUB_WINDOW_DAYS)).isoformat()
+    counts = {day: count for day, count in previous.items() if day <= cutoff}
+    for item in stats["activity"]:
+        if start.isoformat() <= item["day"] <= end.isoformat() and item["solved"]:
+            counts[item["day"]] = max(item["solved"], counts.get(item["day"], 0))
     return counts
 
 
@@ -236,6 +255,10 @@ def main() -> int:
             lambda: github_counts(os.environ["GITHUB_LOGIN"], os.environ["GITHUB_TOKEN"], start, end),
         ),
         "codeforces": (("CODEFORCES_HANDLE",), lambda: codeforces_counts(os.environ["CODEFORCES_HANDLE"], start, end)),
+        "grub": (
+            ("GRUB_USER_ID",),
+            lambda: grub_counts(os.environ["GRUB_USER_ID"], start, end, previous.get("grub", {})),
+        ),
         "workout": (("TREINOS_API_URL",), lambda: workout_counts(os.environ["TREINOS_API_URL"], start, end)),
         "teaching": (("AULAS_PATH",), lambda: teaching_counts(os.environ["AULAS_PATH"], start, end)),
     }
@@ -268,6 +291,10 @@ def main() -> int:
         "sources": status,
         "days": dict(sorted(days.items())),
     }
+    # O card GRUB busca o problema do dia ao vivo pelo proxy do nginx; o id diz qual linha do ranking é a
+    # do dono (decisão 19). Vem do dojo.env, nunca do repositório.
+    if os.environ.get("GRUB_USER_ID"):
+        data["grub"] = {"user_id": os.environ["GRUB_USER_ID"]}
 
     # "For you": só aparece se houver um arquivo de definições. Se o Treinos falhar, mantém o último dia
     # conhecido de cada treino e recalcula os dias até hoje.

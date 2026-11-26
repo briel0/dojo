@@ -15,7 +15,28 @@ const ACTIVITIES = [
 ];
 const taught = (c) => (c.teaching || 0) > 0;
 const WEEKS = 53; // últimos 12 meses em colunas completas (decisão 12)
+const YEAR_END_WEEKS = 6; // faltando até 6 semanas para 31/12, o quadrinho termina em 31/12
+const MIN_CELL = 14;
 const DAY_MS = 86400000;
+
+/**
+ * Sempre 53 colunas, como no Codeforces (decisão 21). Perto do fim do ano, as semanas até 31/12 entram no
+ * lugar das mais antigas. Os quadrados crescem para preencher a largura do card (mínimo de 14px; abaixo
+ * disso, o quadrinho rola como antes).
+ */
+function weekSpan(today) {
+  const scroll = document.getElementById('grid-scroll');
+  const weekdays = document.querySelector('.weekdays');
+  const style = getComputedStyle(scroll);
+  const gap = parseFloat(getComputedStyle(document.getElementById('grid')).columnGap) || 4;
+  const free = scroll.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight)
+    - (weekdays.offsetWidth + parseFloat(getComputedStyle(weekdays).marginLeft));
+  const cell = Math.max(MIN_CELL, Math.floor(free / WEEKS) - gap);
+  const lastDay = new Date(Date.UTC(today.getUTCFullYear(), 11, 31));
+  const toYearEnd = Math.round((addDays(lastDay, -lastDay.getUTCDay()) - addDays(today, -today.getUTCDay())) / (7 * DAY_MS));
+  const future = toYearEnd <= YEAR_END_WEEKS ? toYearEnd : 0;
+  return { past: WEEKS - future, future, cell };
+}
 
 // As datas são dias do calendário (já em Brasília no JSON); em UTC as contas não sofrem com fuso.
 const parseDay = (iso) => new Date(iso + 'T00:00:00Z');
@@ -50,10 +71,35 @@ function fillOf(counts) {
 }
 
 function render(data) {
+  drawGrid(data);
+  // Ao mudar a largura da janela, redesenha se o número de semanas que cabem mudou
+  let span = JSON.stringify(weekSpan(parseDay(data.to)));
+  let pending = null;
+  window.addEventListener('resize', () => {
+    clearTimeout(pending);
+    pending = setTimeout(() => {
+      const now = JSON.stringify(weekSpan(parseDay(data.to)));
+      if (now !== span) {
+        span = now;
+        drawGrid(data);
+      }
+    }, 150);
+  });
+  renderForYou(data);
+  renderGrub(data);
+  renderAulas(data);
+  setInterval(() => renderAulas(data), 60000); // a aula de hoje sai do card quando acaba
+  renderFooter(data);
+}
+
+function drawGrid(data) {
   const grid = document.getElementById('grid');
+  grid.querySelectorAll('.week').forEach((week) => week.remove());
   const today = parseDay(data.to);
-  // Começa num domingo, 52 semanas antes do domingo desta semana
-  const start = addDays(today, -today.getUTCDay() - (WEEKS - 1) * 7);
+  const { past, future, cell } = weekSpan(today);
+  grid.style.setProperty('--cell', `${cell}px`);
+  // Começa num domingo, past - 1 semanas antes do domingo desta semana
+  const start = addDays(today, -today.getUTCDay() - (past - 1) * 7);
   let selected = null;
 
   function select(cell, day) {
@@ -69,7 +115,7 @@ function render(data) {
 
   let todayCell = null;
   let todayDay = null;
-  for (let w = 0; w < WEEKS; w++) {
+  for (let w = 0; w < past + future; w++) {
     const week = document.createElement('div');
     week.className = 'week';
     const sunday = addDays(start, w * 7);
@@ -113,11 +159,6 @@ function render(data) {
   // Em telas estreitas, mostra o fim (hoje) primeiro
   const scroll = document.getElementById('grid-scroll');
   scroll.scrollLeft = scroll.scrollWidth;
-  renderForYou(data);
-  renderGrub(data);
-  renderAulas(data);
-  setInterval(() => renderAulas(data), 60000); // a aula de hoje sai do card quando acaba
-  renderFooter(data);
 }
 
 function sinceText(days) {

@@ -10,6 +10,10 @@ Group=dojo
 # Token e usuários: lido pelo systemd como root (o arquivo é 600, o usuário dojo não o lê)
 EnvironmentFile=/etc/dojo/dojo.env
 WorkingDirectory=/opt/dojo/app
+# Card AULA (decisão 20): atualiza o clone do planejamento das aulas antes da coleta, com a deploy key só de
+# leitura. O "-" deixa a coleta seguir se o pull falhar (o card usa o que já estava no clone)
+Environment="GIT_SSH_COMMAND=ssh -i /var/lib/dojo/.ssh/aulas-plano -o IdentitiesOnly=yes -o UserKnownHostsFile=/var/lib/dojo/.ssh/known_hosts"
+ExecStartPre=-/usr/bin/git -C /var/lib/dojo/aulas-plano pull --ff-only -q
 ExecStart=/usr/bin/python3 /opt/dojo/app/collector/collect.py
 # Só escreve o JSON; o resto do sistema fica só para leitura
 NoNewPrivileges=true

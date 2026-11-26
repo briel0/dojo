@@ -8,6 +8,7 @@ Uso: python3 collector/collect.py   (configuração por variáveis de ambiente o
 
 import json
 import os
+import re
 import sys
 import tempfile
 import urllib.parse
@@ -211,6 +212,91 @@ def teaching_counts(path: str, start: date, end: date) -> dict[str, int]:
     return counts
 
 
+WEEKDAY_CODES = ("seg", "ter", "qua", "qui", "sex", "sab", "dom")
+NEXT_CLASSES_DAYS = 56  # o card AULA procura a próxima aula nas próximas 8 semanas
+ENTRY_RE = re.compile(r"^\s*[-*]\s*\**\s*(\d{1,2})/(\d{1,2})\s*\**\s*(?:→|->|-|:)\s*(.*\S)\s*$")
+VIDEOS_RE = re.compile(r"^#+.*v[íi]deos", re.IGNORECASE)
+NO_CLASS_RE = re.compile(r"^sem aula\b", re.IGNORECASE)
+
+
+def lesson_entries(text: str, today: date) -> dict[date, str]:
+    """As aulas com data de um arquivo de disciplina (`- DD/MM → tema`), com o ano deduzido (decisão 20).
+
+    As datas não têm ano, mas a lista é cronológica: a última entrada fica no ano que a deixa mais perto de
+    hoje e, subindo o arquivo, cada vez que a data "volta" (16/12 antes de 03/02) desce um ano. Só vale o
+    que está acima da seção de vídeos; "[Sem data]" fica de fora. Uma lista fora de ordem (uma volta com
+    mais de 200 dias de salto) levanta erro, para a disciplina ficar de fora em vez de mostrar tema errado.
+    """
+    found: list[tuple[int, int, str]] = []
+    for line in text.splitlines():
+        if VIDEOS_RE.match(line):
+            break
+        match = ENTRY_RE.match(line)
+        if match:
+            found.append((int(match[2]), int(match[1]), match[3]))
+    if not found:
+        return {}
+
+    month, day, _ = found[-1]
+    year = min((today.year - 1, today.year, today.year + 1),
+               key=lambda y: abs((date(y, month, min(day, 28)) - today).days))
+    entries: dict[date, str] = {}
+    later: date | None = None
+    for month, day, theme in reversed(found):
+        if later and (month, day) > (later.month, later.day):
+            year -= 1
+        when = date(year, month, day)
+        if later and (later - when).days > 200 and (month, day) > (later.month, later.day):
+            raise ValueError(f"datas fora de ordem perto de {day:02d}/{month:02d}")
+        entries.setdefault(when, theme)  # a mesma data repetida: vale a de baixo, a mais recente
+        later = when
+    return entries
+
+
+def clean_theme(theme: str) -> str:
+    """O tema sem o "Nessa aula vamos" do começo e sem a marcação do Markdown (links viram só o texto)."""
+    theme = re.sub(r"\[([^\]]*)\]\([^)]*\)", r"\1", theme)
+    theme = re.sub(r"[*`]", "", theme).strip()
+    theme = re.sub(r"^nessa aula vamos\s+", "", theme, flags=re.IGNORECASE)
+    return theme[:1].upper() + theme[1:]
+
+
+def next_classes(repo: str, today: date) -> tuple[list[dict], list[str]]:
+    """As aulas das próximas semanas pela grade (`grade.json` na raiz do repositório de planejamento).
+
+    A grade define os dias e o arquivo da disciplina dá o tema; "sem aula" na data é exceção e a aula some.
+    Sem entrada na data, o tema vai nulo ("tema não definido"). A página escolhe a próxima pelo horário.
+    Devolve também os erros por disciplina (a disciplina com erro fica de fora; as outras seguem).
+    """
+    root = Path(repo)
+    grade = json.loads((root / "grade.json").read_text(encoding="utf-8"))
+    classes: list[dict] = []
+    errors: list[str] = []
+    for name, slot in grade.items():
+        try:
+            folder = root / name
+            files = [f for f in folder.iterdir() if f.name.lower() == "agents.md"] if folder.is_dir() else []
+            if not files:
+                raise FileNotFoundError("sem agents.md")
+            entries = lesson_entries(files[0].read_text(encoding="utf-8"), today)
+            weekday = WEEKDAY_CODES.index(slot["dia"])
+        except Exception as error:  # noqa: BLE001 - uma disciplina com problema não derruba as outras
+            errors.append(f"{name}: {error}")
+            continue
+        first = today + timedelta(days=(weekday - today.weekday()) % 7)
+        for week in range(0, NEXT_CLASSES_DAYS, 7):
+            when = first + timedelta(days=week)
+            theme = entries.get(when)
+            if theme and NO_CLASS_RE.match(clean_theme(theme)):
+                continue
+            classes.append({
+                "dia": when.isoformat(), "inicio": slot["inicio"], "fim": slot["fim"],
+                "disciplina": name, "tema": clean_theme(theme) if theme else None,
+            })
+    classes.sort(key=lambda item: (item["dia"], item["inicio"], item["disciplina"]))
+    return classes, errors
+
+
 def previous_data(output: Path) -> dict:
     """O JSON da última execução, para não apagar uma fonte que falhou agora."""
     try:
@@ -313,10 +399,22 @@ def main() -> int:
             status["foryou"] = {"ok": False, "error": f"{error.__class__.__name__}: {error}"[:300]}
         if not status["foryou"]["ok"]:
             print(f"foryou: {status['foryou']['error']}", file=sys.stderr)
+
+    # Card AULA (decisão 20): as próximas aulas pela grade e os temas do repositório de planejamento, que o
+    # systemd atualiza com git pull antes da coleta. Sem o repositório, a caixinha não aparece.
+    if os.environ.get("AULAS_PLANO_REPO"):
+        try:
+            classes, errors = next_classes(os.environ["AULAS_PLANO_REPO"], end)
+            data["aulas"] = classes
+            status["aulas"] = {"ok": not errors} | ({"error": "; ".join(errors)[:300]} if errors else {})
+        except Exception as error:  # noqa: BLE001 - sem grade, só a caixinha some
+            status["aulas"] = {"ok": False, "error": f"{error.__class__.__name__}: {error}"[:300]}
+        if not status["aulas"]["ok"]:
+            print(f"aulas: {status['aulas']['error']}", file=sys.stderr)
     write_atomically(output, json.dumps(data, ensure_ascii=False, indent=1) + "\n")
     print(f"{output}: {len(days)} dias com atividade; " + ", ".join(
         f"{source} {'ok' if status[source]['ok'] else 'FALHOU'}" for source in SOURCES))
-    checked = [source for source in status if source in counts or source == "foryou"]
+    checked = [source for source in status if source in counts or source in ("foryou", "aulas")]
     return 0 if all(status[source]["ok"] for source in checked) else 1
 
 

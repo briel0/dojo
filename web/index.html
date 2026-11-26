@@ -7,7 +7,7 @@
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800;900&family=Martian+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800;900&family=Martian+Mono:wght@400;500&family=Nunito+Sans:wght@400;700;900&family=Bricolage+Grotesque:wght@600;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <script src="app.js" defer></script>
 </head>
@@ -81,8 +81,19 @@
         <ol class="foryou-list" id="grub-list"></ol>
         <span class="rec-why" id="grub-foot"></span>
       </article>
-      <div class="rec-soon" aria-hidden="true">MAIS RECOMENDAÇÕES EM BREVE</div>
-    </div>
+      <!-- Decisão 20: a próxima aula e os temas do planejamento, sempre a terceira caixinha -->
+      <article class="rec" id="rec-aula" aria-labelledby="rec-aula-title" hidden>
+        <div class="slot-head">
+          <h3 class="slot-name" id="rec-aula-title">AULA</h3>
+          <span class="slot-src">PLANEJAMENTO</span>
+        </div>
+        <div class="rec-pick">
+          <span class="rec-label">PRÓXIMA AULA <span class="accent" aria-hidden="true">▸</span></span>
+          <span class="rec-tag" id="aula-when">—</span>
+          <span class="rec-why" id="aula-why"></span>
+        </div>
+        <ol class="aula-list" id="aula-list"></ol>
+      </article>    </div>
   </section>
 
   <section class="slots" aria-label="Próximas seções">

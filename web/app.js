@@ -5,6 +5,7 @@ const MONTHS = ['JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL', 'AGO', 'SET', '
 const WEEKDAYS = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'];
 const SOURCE_NAMES = {
   github: 'GitHub', codeforces: 'Codeforces', grub: 'GRUB', workout: 'Treinos', teaching: 'Aulas', foryou: 'For you',
+  aulas: 'Planejamento das aulas',
 };
 // Atividades que pintam a célula, na ordem em que a dividem (decisões 3 e 4). A aula não pinta:
 // vira um quadradinho discreto no meio da célula (decisão 16).
@@ -114,6 +115,8 @@ function render(data) {
   scroll.scrollLeft = scroll.scrollWidth;
   renderForYou(data);
   renderGrub(data);
+  renderAulas(data);
+  setInterval(() => renderAulas(data), 60000); // a aula de hoje sai do card quando acaba
   renderFooter(data);
 }
 
@@ -135,7 +138,7 @@ function renderForYou(data) {
   document.getElementById('foryou-name').textContent = next.nome.toUpperCase();
   document.getElementById('foryou-why').textContent = next.dias === null
     ? `sem registro nos últimos ${foryou.janela_dias} dias`
-    : `o que você não faz há mais tempo (${sinceText(next.dias)})`;
+    : next.dias <= 1 ? `feito ${sinceText(next.dias)}` : `feito há ${sinceText(next.dias)}`;
   document.getElementById('foryou-src').textContent = `${foryou.janela_dias} DIAS · API TREINOS`;
 
   const list = document.getElementById('foryou-list');
@@ -306,6 +309,60 @@ async function renderGrub(data) {
     why.textContent = `não consegui falar com o GRUB (${error.message})`;
     foot.textContent = '';
   }
+}
+
+/**
+ * Card AULA (decisão 20): o coletor manda as aulas das próximas semanas pela grade; a página fica com as que
+ * ainda não acabaram e mostra todas as do primeiro dia, com o tema ou "tema não definido".
+ */
+const todayBR = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' });
+
+function aulaWhen(day, first) {
+  const days = Math.round((parseDay(day) - parseDay(todayBR())) / DAY_MS);
+  if (days === 0) {
+    const left = new Date(`${day}T${first}:00-03:00`) - Date.now();
+    return { tag: `HOJE · ${first}`, why: left > 0 ? `começa em ${untilText(left)}` : 'acontecendo agora' };
+  }
+  const date = parseDay(day);
+  const label = `${WEEKDAYS[date.getUTCDay()]} ${String(date.getUTCDate()).padStart(2, '0')}/${String(date.getUTCMonth() + 1).padStart(2, '0')}`;
+  return { tag: days === 1 ? `AMANHÃ · ${first}` : label, why: days === 1 ? label.toLowerCase() : `em ${days} dias` };
+}
+
+function renderAulas(data) {
+  const box = document.getElementById('rec-aula');
+  const upcoming = (data.aulas || []).filter((item) => new Date(`${item.dia}T${item.fim}:00-03:00`) > Date.now());
+  if (upcoming.length === 0) {
+    box.hidden = true;
+    return;
+  }
+  const day = upcoming[0].dia;
+  const classes = upcoming.filter((item) => item.dia === day);
+  const when = aulaWhen(day, classes[0].inicio);
+  const missing = classes.filter((item) => !item.tema).length;
+  document.getElementById('aula-when').textContent = when.tag;
+  document.getElementById('aula-why').textContent =
+    `${when.why} · ${plural(classes.length, 'turma', 'turmas')}${missing ? ` · ${missing} sem tema` : ''}`;
+  box.classList.toggle('missing', missing > 0);
+
+  const list = document.getElementById('aula-list');
+  list.replaceChildren();
+  for (const item of classes) {
+    const row = document.createElement('li');
+    const time = document.createElement('span');
+    time.className = 'aula-time';
+    time.textContent = item.inicio;
+    const name = document.createElement('span');
+    name.className = 'aula-name';
+    name.textContent = item.disciplina;
+    const theme = document.createElement('span');
+    theme.className = item.tema ? 'aula-theme' : 'aula-theme aula-missing';
+    theme.textContent = item.tema || '⚠ TEMA NÃO DEFINIDO';
+    time.textContent = `${item.inicio}-${item.fim}`; // como o selo do sistema: nome e, ao lado, o horário
+    row.append(name, time, theme);
+    list.append(row);
+  }
+  box.hidden = false;
+  document.getElementById('foryou').hidden = false;
 }
 
 fetch('activity.json', { cache: 'no-store' })

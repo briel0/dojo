@@ -26,5 +26,19 @@ sudo systemctl daemon-reload && sudo systemctl enable --now dojo-collector.timer
 - GRUB (decisões 18 e 19): `GRUB_USER_ID=<id do perfil>` no `dojo.env`. O site do nginx repassa o problema do
   dia para `api.grubufabc.com`; depois de atualizar `deploy/nginx-dojo.conf`, copie de novo para
   `/etc/nginx/sites-available/dojo` e rode `sudo nginx -t && sudo systemctl reload nginx`.
+- AULA (decisão 20): clone do repositório (privado) de planejamento das aulas em `/var/lib/dojo/aulas-plano`,
+  atualizado pelo serviço antes de cada coleta com uma deploy key só de leitura:
+
+  ```bash
+  sudo -u dojo install -d -m 700 /var/lib/dojo/.ssh
+  sudo -u dojo ssh-keygen -t ed25519 -N "" -C dojo-aulas -f /var/lib/dojo/.ssh/aulas-plano
+  # cadastrar a chave pública como deploy key (só leitura) no repositório, então:
+  sudo -u dojo sh -c 'ssh-keyscan github.com > /var/lib/dojo/.ssh/known_hosts'
+  sudo -u dojo env GIT_SSH_COMMAND="ssh -i /var/lib/dojo/.ssh/aulas-plano -o IdentitiesOnly=yes -o UserKnownHostsFile=/var/lib/dojo/.ssh/known_hosts" \
+    git clone git@github.com:<dono>/<repositório>.git /var/lib/dojo/aulas-plano
+  ```
+
+  E `AULAS_PLANO_REPO=/var/lib/dojo/aulas-plano` no `dojo.env`. Depois de atualizar o
+  `deploy/dojo-collector.service`, copie de novo para `/etc/systemd/system/` e rode `sudo systemctl daemon-reload`.
 - O token do GitHub expira: quando o rodapé da página disser que o GitHub falhou, gere outro e troque em
   `/etc/dojo/dojo.env`.

@@ -222,21 +222,6 @@ a:hover { color: var(--workout-hover); }
 
 .rec .slot-name { margin: 0; }
 
-/* Lugar das próximas recomendações: sempre por último, ocupando o resto da linha, como os blocos
-   "EM BREVE" (com uma caixinha, duas colunas; com duas, uma; sozinho numa linha, a linha inteira) */
-.rec-soon {
-  order: 99;
-  grid-column: auto / -1;
-  min-height: 120px;
-  border: 1px dashed var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 11px;
-  color: var(--muted);
-  letter-spacing: 0.06em;
-}
-
 /* A recomendação urgente vem primeiro (decisão 19); o resto segue a ordem do HTML */
 .rec.urgent { order: -1; }
 
@@ -285,6 +270,101 @@ a:hover { color: var(--workout-hover); }
 .foryou-list li:first-child { border-top: 0; }
 .foryou-name { font-family: var(--display); font-weight: 800; font-size: 18px; letter-spacing: 0.06em; text-transform: uppercase; }
 .foryou-when { text-align: right; font-size: 11px; }
+
+/* Caixinhas com a identidade de cada marca (decisão 20): a AULA com o visual do sistema da escola, o GRUB
+   com o do grubufabc.com. O TREINO segue o visual do dojo. As variáveis --rec-* trocam o que é comum */
+.rec { color: var(--rec-text, var(--text)); }
+.rec .rec-label, .rec .rec-why, .rec .slot-src { color: var(--rec-muted, var(--muted)); }
+.rec .foryou-list li { border-top-color: var(--rec-line, var(--border)); }
+
+/* AULA: o visual da tela de agendamentos do sistema da escola. Fundo claro, um card branco por turma com o
+   horário num selo azul-claro, Nunito Sans. Data e horário em texto alinhado à margem, sem pílula */
+#rec-aula {
+  --rec-color: #0075B2;
+  --rec-text: #566A7F;
+  --rec-muted: #8C9AAB;
+  order: 50; /* sempre a terceira, seja qual for a ordem de GRUB e TREINO */
+  background: #F6F5FC;
+  border-top: 3px solid #0075B2;
+  font-family: 'Nunito Sans', sans-serif;
+}
+#rec-aula .slot-name { font-family: 'Nunito Sans', sans-serif; font-weight: 900; letter-spacing: 0.04em; color: #0075B2; }
+#rec-aula .rec-label, #rec-aula .slot-src { font-weight: 700; letter-spacing: 0.08em; }
+#rec-aula .accent { color: #0075B2; }
+#rec-aula .rec-tag {
+  font-family: 'Nunito Sans', sans-serif;
+  font-weight: 900;
+  font-size: 24px;
+  letter-spacing: 0.02em;
+  color: #FFFFFF;
+  background: #0075B2; /* o botão "Hoje" do sistema */
+  clip-path: none;
+  border-radius: 4px;
+  /* Como "BRAÇO" e "EM ABERTO": o fundo começa na margem de "PRÓXIMA AULA", com pouco recuo do texto */
+  padding: 6px 10px;
+  line-height: 1.1;
+}
+#rec-aula.missing .rec-why { color: #B7791F; font-weight: 700; }
+
+.aula-list { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.aula-list li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+  background: #FFFFFF;
+  border-radius: 4px;
+  box-shadow: 8px 4px 10px rgba(0, 0, 0, 0.04);
+  padding: 14px 16px;
+}
+.aula-name { font-weight: 800; font-size: 15px; color: #34475B; }
+.aula-time {
+  font-weight: 700;
+  font-size: 10px;
+  color: #003250;
+  background: #AFE6FF;
+  border-radius: 4px;
+  padding: 4px;
+}
+/* Tema no cinza-azulado do texto do sistema (#566A7F), não no cinza claro do subtítulo: dá para ler */
+.aula-theme { flex-basis: 100%; font-size: 14px; line-height: 1.5; color: #566A7F; }
+.aula-missing {
+  flex-basis: auto;
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: #5C4A00;
+  background: #FFED6C;
+  border-radius: 4px;
+  padding: 4px;
+}
+
+/* GRUB: grafite, tinta clara, amarelo-balão, cantos retos e sombra dura; Bricolage Grotesque e JetBrains Mono */
+#rec-grub {
+  --rec-color: #ede53a;
+  --rec-text: #f7f6f0;
+  --rec-muted: #8a8a80;
+  --rec-line: #3a3b36;
+  background: #242522;
+  border: 1.5px solid #3a3b36;
+  border-top: 3px solid #ede53a;
+  box-shadow: 6px 6px 0 #1b1c1a;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+}
+#rec-grub .slot-name, #rec-grub .rec-title, #rec-grub .foryou-name { font-family: 'Bricolage Grotesque', sans-serif; letter-spacing: 0.01em; }
+#rec-grub .accent { color: #ede53a; }
+#rec-grub .rec-tag {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  color: #1b1c1a;
+  background: #ede53a;
+  clip-path: none;
+  padding: 6px 14px;
+  box-shadow: 4px 4px 0 #f7f6f0;
+  margin-bottom: 8px; /* a sombra dura ocupa 4px: sem isso o título do problema cola no selo */
+}
+#rec-grub .rec-title { color: #f7f6f0; }
+#rec-grub .rec-title:hover { color: #ede53a; }
+#grub-list li.is-me .foryou-name, #grub-list li.is-me .foryou-since { color: #ede53a; }
 
 .slots {
   display: grid;
